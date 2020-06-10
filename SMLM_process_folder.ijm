@@ -7,7 +7,7 @@
 @String(label = "Peak threshold", choices={"2*std(Wave.F1)", "std(Wave.F1)"}) ts_threshold
 @Integer(label = "Fit radius", value=3) ts_fitradius
 @Boolean(label = "Apply Drift Correction", value=true) Bool_DriftCorr
-@Boolean(label = "Apply Chromatic Abberation Correction", value=true) Bool_ChromCorr
+@Boolean(label = "Apply Chromatic Aberration Correction", value=true) Bool_ChromCorr
 @Integer(label = "Drift correction steps", value=5) ts_drift_steps
 @File(label = "Chromatic aberration directory", style = "directory", value="C:\\Temp", description="The directory where the chromatic aberration JSON files are stored") jsondir
 
