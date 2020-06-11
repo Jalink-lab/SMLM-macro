@@ -8,12 +8,12 @@
 @String(label = "Peak threshold", choices={"2*std(Wave.F1)", "std(Wave.F1)"}) ts_threshold
 @Integer(label = "Fit radius", value=3) ts_fitradius
 @Boolean(label = "Apply Drift Correction", value=true) Bool_DriftCorr
+@Integer(label = "Drift correction steps", value=10) ts_drift_steps
 @Boolean(label = "Apply Chromatic Abberation Correction", value=true) Bool_ChromCorr
-@Integer(label = "Drift correction steps", value=5) ts_drift_steps
 @File(label = "Chromatic aberration directory", style = "directory", value="C:\\Temp", description="The directory where the chromatic aberration JSON files are stored") jsondir
 
 @Boolean(label = "Merge reappearing molecules", value=true) Bool_AutoMerge
-@String(label = "Filtering String", value = "intensity>500 & sigma>70 & uncertainty<50") filtering_string
+@String(label = "Filtering String", value = "intensity>500 & sigma>70 & uncertainty_xy<50") filtering_string
 @String(label="Visualization Method",choices={"Averaged shifted histograms","Scatter plot","Normalized Gaussian","Histograms","No Renderer"}) ts_renderer
 
 @Boolean(label = "16-bit output instead of 32-bit", value=false) Bool_16bit
@@ -113,8 +113,8 @@ if(!File.exists(output)) {
 	else exit;
 }
 
-print("---AUTOMATIC THUNDERSTORM ANALYSIS---")
-;
+print("---AUTOMATIC THUNDERSTORM ANALYSIS---");
+
 if(Bool_display==false) setBatchMode(true);
 processFolder(input);
 if(nImages>0) run("Close All");
