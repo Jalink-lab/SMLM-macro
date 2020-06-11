@@ -66,7 +66,7 @@ else isemgain=false;
  * 2.41  Forgot [] around the file.
  * 2.42  Added camera offset and temporal median window in script parameters
  */
-Version = 2.41;
+Version = 2.42;
 
 //VARIABLES
 
