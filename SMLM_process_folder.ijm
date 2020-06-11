@@ -64,6 +64,7 @@ else isemgain=false;
  * 2.30  Save RAW-csv and filtered-csv. Affine transform on filtered-csv data.
  * 2.40  Use new ImageJSON plugin for writing json
  * 2.41  Forgot [] around the file.
+ * 2.42  Added camera offset and temporal median window in script parameters
  */
 Version = 2.41;
 
