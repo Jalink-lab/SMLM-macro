@@ -2,12 +2,13 @@
 @File(label = "Output directory", style = "directory") output
 @String(label = "File suffix", value = ".lif") suffix
 @Boolean(label = "Apply Temporal Median Subtraction", value=true) Bool_TempMed
+@Integer(label = "with temporal median time window (frames)", value = 251) window
 @String(label = "Sub-pixel localization method", choices={"PSF: Integrated Gaussian", "PSF: Gaussian", "PSF: Elliptical Gaussian (3D astigmatism)", "Radial symmetry", "Centroid of local neighborhood", "Phasor Fitting", "No estimator"}) ts_estimator
 @String(label = "Fitting method", choices={"Least squares", "Weighted Least squares", "Maximum likelihood"}) ts_method
 @String(label = "Peak threshold", choices={"2*std(Wave.F1)", "std(Wave.F1)"}) ts_threshold
 @Integer(label = "Fit radius", value=3) ts_fitradius
 @Boolean(label = "Apply Drift Correction", value=true) Bool_DriftCorr
-@Boolean(label = "Apply Chromatic Aberration Correction", value=true) Bool_ChromCorr
+@Boolean(label = "Apply Chromatic Abberation Correction", value=true) Bool_ChromCorr
 @Integer(label = "Drift correction steps", value=5) ts_drift_steps
 @File(label = "Chromatic aberration directory", style = "directory", value="C:\\Temp", description="The directory where the chromatic aberration JSON files are stored") jsondir
 
@@ -22,6 +23,8 @@
 @Float(label = "Gain conversion factor of the camera (photoelectrons to ADU)", value=11.71) photons2adu
 @Integer(label = "EM gain (set to 0 for no EM; value will be overwritten if found in the metadata)", value = 50) EM_gain
 @Float(label = "Pixel size [nm] (value will be overwritten if found in the metadata)", value = 100) pixel_size
+@Integer(label = "Camera offset (ADU)", value = 100) offset
+
 
 if (EM_gain>0) isemgain=true;
 else isemgain=false;
@@ -71,12 +74,8 @@ readoutnoise=0;
 quantumefficiency=1;
 
 //Background Subtraction
-window = 501;
-if (Bool_TempMed){
-	offset = 1000;
-} else {
-	offset=100;
-}
+if (Bool_TempMed) offset = 1000;
+
 //Thunderstorm
 ts_filter = "Wavelet filter (B-Spline)";
 ts_scale = 2;
@@ -220,8 +219,7 @@ function processimage(outputtiff, outputcsv, wavelength, EM_gain, pixel_size) {
 	  " renderer=["+ts_renderer+"] magnification="+ts_magnification+" colorize="+ts_colorize+" threed="+ts_threed+" shifts="+ts_shifts+" repaint="+ts_repaint);
 	outputcsvRAW = substring(outputcsv,0,lengthOf(outputcsv)-4) + "_RAW.csv";
 	run("Export results", "floatprecision="+ts_floatprecision+" filepath=["+ outputcsvRAW + "] fileformat=[CSV (comma separated)] sigma=true intensity=true offset=true saveprotocol=false x=true y=true bkgstd=true id=true uncertainty_xy=true frame=true");
-
-	
+	
 	//save the ThunderStorm settings (JSON)
 	run("ImageJSON", "file=["+jsonfile+"] command=objStart name=[ThunderStorm Settings] value=");
 		run("ImageJSON", "file=["+jsonfile+"] command=objStart name=[Camera Settings] value=");
@@ -278,8 +276,7 @@ function processimage(outputtiff, outputcsv, wavelength, EM_gain, pixel_size) {
 		close();
 	}
 	// save drift correction settings
-
-	run("ImageJSON", "file=["+jsonfile+"] command=objStart name=[Drift correction] value=");
+	run("ImageJSON", "file=["+jsonfile+"] command=objStart name=[Drift correction] value=");
 	run("ImageJSON", "file=["+jsonfile+"] command=boolean name=[Applied] value="+Bool_DriftCorr);
 	run("ImageJSON", "file=["+jsonfile+"] command=number name=[Magnification] value="+ts_drift_magnification);
 	run("ImageJSON", "file=["+jsonfile+"] command=number name=[Steps] value="+ts_drift_steps);
@@ -294,8 +291,7 @@ function processimage(outputtiff, outputcsv, wavelength, EM_gain, pixel_size) {
 		run("Show results table", "action=merge zcoordweight="+AutoMerge_ZCoordWeight+" offframes="+AutoMerge_OffFrame+" dist="+AutoMerge_Dist+" framespermolecule="+AutoMerge_FramesPerMolecule);
 	}
 	// save merge settings
-	
-run("ImageJSON", "file=["+jsonfile+"] command=objStart name=[Merging of reappearing molecules] value=");
+	run("ImageJSON", "file=["+jsonfile+"] command=objStart name=[Merging of reappearing molecules] value=");
 	run("ImageJSON", "file=["+jsonfile+"] command=boolean name=[Applied] value="+Bool_AutoMerge);
 	run("ImageJSON", "file=["+jsonfile+"] command=number name=[Z coordinate weight] value="+AutoMerge_ZCoordWeight);
 	run("ImageJSON", "file=["+jsonfile+"] command=number name=[Maximum off frames] value="+AutoMerge_OffFrame);
@@ -308,8 +304,7 @@ run("ImageJSON", "file=["+jsonfile+"] command=objStart name=[Merging of reappear
 		run("Show results table", "action=filter formula=[" + filtering_string + "]");
 	}
 	run("Export results", "floatprecision="+ts_floatprecision+" filepath=["+ outputcsv + "] fileformat=[CSV (comma separated)] sigma=true intensity=true offset=true saveprotocol=false x=true y=true bkgstd=true id=true uncertainty_xy=true frame=true");
-
-	// save filtering settings
+	// save filtering settings
 	run("ImageJSON", "file=["+jsonfile+"] command=objStart name=[Filtering] value=");
 	run("ImageJSON", "file=["+jsonfile+"] command=string name=[Filtering string] value=["+filtering_string+"]");
 	run("ImageJSON", "file=["+jsonfile+"] command=objEnd name= value=");
@@ -319,8 +314,7 @@ run("ImageJSON", "file=["+jsonfile+"] command=objStart name=[Merging of reappear
 	rd_dx=10;
 	rd_dzforce=false;
 	run("Visualization", "imleft=0.0 imtop=0.0 imwidth="+IMwidth+" imheight="+IMheight+" renderer=["+ts_renderer+"] dxforce="+rd_force_dx+" magnification="+ts_magnification+" colorize="+ts_colorize+" dx="+rd_dx+" threed="+ts_threed+" dzforce="+rd_dzforce);
-	
-// save rendering settings
+	// save rendering settings
 	run("ImageJSON", "file=["+jsonfile+"] command=objStart name=[Rendering] value=");
 	run("ImageJSON", "file=["+jsonfile+"] command=boolean name=[Force dx] value="+rd_force_dx);
 	run("ImageJSON", "file=["+jsonfile+"] command=number name=[dx] value="+rd_dx);
@@ -391,4 +385,4 @@ function getDateTime() {
      if (second<10) {TimeString = TimeString+"0";}
      TimeString = TimeString+second;
      return TimeString;
-}
+}
