@@ -1,29 +1,29 @@
-@File(label = "Input directory", style = "directory") input
-@File(label = "Output directory", style = "directory") output
-@String(label = "File suffix", value = ".lif") suffix
-@Boolean(label = "Apply Temporal Median Subtraction", value=true) Bool_TempMed
-@Integer(label = "with temporal median time window (frames)", value = 251) window
-@String(label = "Sub-pixel localization method", choices={"PSF: Integrated Gaussian", "PSF: Gaussian", "PSF: Elliptical Gaussian (3D astigmatism)", "Radial symmetry", "Centroid of local neighborhood", "Phasor Fitting", "No estimator"}) ts_estimator
-@String(label = "Fitting method", choices={"Least squares", "Weighted Least squares", "Maximum likelihood"}) ts_method
-@String(label = "Peak threshold", choices={"2*std(Wave.F1)", "std(Wave.F1)"}) ts_threshold
-@Integer(label = "Fit radius", value=3) ts_fitradius
-@Boolean(label = "Apply Drift Correction", value=true) Bool_DriftCorr
-@Integer(label = "Drift correction steps", value=10) ts_drift_steps
-@Boolean(label = "Apply Chromatic Abberation Correction", value=true) Bool_ChromCorr
-@File(label = "Chromatic aberration directory", style = "directory", value="C:\\Temp", description="The directory where the chromatic aberration JSON files are stored") jsondir
+#@File(label = "Input directory", style = "directory") input
+#@File(label = "Output directory", style = "directory") output
+#@String(label = "File suffix", value = ".lif") suffix
+#@Boolean(label = "Apply Temporal Median Subtraction", value=true) Bool_TempMed
+#@Integer(label = "with temporal median time window (frames)", value = 251) window
+#@String(label = "Sub-pixel localization method", choices={"PSF: Integrated Gaussian", "PSF: Gaussian", "PSF: Elliptical Gaussian (3D astigmatism)", "Radial symmetry", "Centroid of local neighborhood", "Phasor Fitting", "No estimator"}) ts_estimator
+#@String(label = "Fitting method", choices={"Least squares", "Weighted Least squares", "Maximum likelihood"}) ts_method
+#@String(label = "Peak threshold", choices={"2*std(Wave.F1)", "std(Wave.F1)"}) ts_threshold
+#@Integer(label = "Fit radius", value=3) ts_fitradius
+#@Boolean(label = "Apply Drift Correction", value=true) Bool_DriftCorr
+#@Integer(label = "Drift correction steps", value=10) ts_drift_steps
+#@Boolean(label = "Apply Chromatic Abberation Correction", value=true) Bool_ChromCorr
+#@File(label = "Chromatic aberration directory", style = "directory", value="C:\\Temp", description="The directory where the chromatic aberration JSON files are stored") jsondir
 
-@Boolean(label = "Merge reappearing molecules", value=true) Bool_AutoMerge
-@String(label = "Filtering String", value = "intensity>500 & sigma>70 & uncertainty_xy<50") filtering_string
-@String(label="Visualization Method",choices={"Averaged shifted histograms","Scatter plot","Normalized Gaussian","Histograms","No Renderer"}) ts_renderer
+#@Boolean(label = "Merge reappearing molecules", value=true) Bool_AutoMerge
+#@String(label = "Filtering String", value = "intensity>500 & sigma>70 & uncertainty_xy<50") filtering_string
+#@String(label="Visualization Method",choices={"Averaged shifted histograms","Scatter plot","Normalized Gaussian","Histograms","No Renderer"}) ts_renderer
 
-@Boolean(label = "16-bit output instead of 32-bit", value=false) Bool_16bit
+#@Boolean(label = "16-bit output instead of 32-bit", value=false) Bool_16bit
 
-@Boolean(label = "Display images while processing?", value=false) Bool_display
+#@Boolean(label = "Display images while processing?", value=false) Bool_display
 
-@Float(label = "Gain conversion factor of the camera (photoelectrons to ADU)", value=11.71) photons2adu
-@Integer(label = "EM gain (set to 0 for no EM; value will be overwritten if found in the metadata)", value = 50) EM_gain
-@Float(label = "Pixel size [nm] (value will be overwritten if found in the metadata)", value = 100) pixel_size
-@Integer(label = "Camera offset (ADU)", value = 100) offset
+#@Double(label = "Gain conversion factor of the camera (photoelectrons to ADU)", value=11.71) photons2adu
+#@Integer(label = "EM gain (set to 0 for no EM; value will be overwritten if found in the metadata)", value = 50) EM_gain
+#@Float(label = "Pixel size [nm] (value will be overwritten if found in the metadata)", value = 100) pixel_size
+#@Integer(label = "Camera offset (ADU)", value = 100) offset
 
 
 if (EM_gain>0) isemgain=true;
@@ -65,8 +65,9 @@ else isemgain=false;
  * 2.40  Use new ImageJSON plugin for writing json
  * 2.41  Forgot [] around the file.
  * 2.42  Added camera offset and temporal median window in script parameters
+ * 2.43  Fixed crash when first series is not a movie; changed ts_repaint to 1000 (was 50).
  */
-Version = 2.42;
+Version = 2.43;
 
 //VARIABLES
 
@@ -95,7 +96,7 @@ ts_magnification = 10;
 ts_colorize = false;
 ts_threed = false;
 ts_shifts = 2;
-ts_repaint = 50;
+ts_repaint = 1000;
 ts_floatprecision = 5;
 affine = "";
 ts_drift_magnification = 5;
@@ -152,14 +153,13 @@ function processFile(input, output, file) {
 		Ext.getSizeT(sizeT);
 		Ext.getSizeZ(sizeZ);
 		Ext.getSeriesName(seriesName);
-		
-		if((sizeT>1) || (sizeZ>1&&suffix!="lif") || (sizeZ>1&&suffix!=".lif")) {
+		if(n==0){
+			outputcsv_base=substring(outputcsv,0, lengthOf(outputcsv)-lengthOf(suffix));
+			outputtiff_base=substring(outputtiff,0, lengthOf(outputtiff)-lengthOf(suffix));
+		}
+		if((sizeT>1) || (sizeZ>1&&suffix!="lif") || (sizeZ>1&&suffix!=".lif")) {
 			if (nr_series>1){ //feedback & renaming of the outputfiles
 				print("Processing file "+inputfile+" ; series "+n+1+"/"+nr_series);
-				if(n==0){
-					outputcsv_base=substring(outputcsv,0, lengthOf(outputcsv)-lengthOf(suffix));
-					outputtiff_base=substring(outputtiff,0, lengthOf(outputtiff)-lengthOf(suffix));
-				}
 				outputcsv = outputcsv_base + "_series" + n+1 + ".csv";
 				outputtiff= outputtiff_base + "_series" + n+1 + ".tif";
 			}
