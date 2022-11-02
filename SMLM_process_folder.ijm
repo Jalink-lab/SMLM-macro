@@ -66,8 +66,9 @@ else isemgain=false;
  * 2.41  Forgot [] around the file.
  * 2.42  Added camera offset and temporal median window in script parameters
  * 2.43  Fixed crash when first series is not a movie; changed ts_repaint to 1000 (was 50).
+ * 2.44  Fixes mistake in which the use of temporal median filtering was not properly reported in the JSON output
  */
-Version = 2.43;
+Version = 2.44;
 
 //VARIABLES
 
