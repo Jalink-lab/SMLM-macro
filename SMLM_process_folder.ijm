@@ -206,7 +206,7 @@ function processimage(outputtiff, outputcsv, wavelength, EM_gain, pixel_size) {
 	
 	run("ImageJSON", "file=["+jsonfile+"] command=objStart name=[Super Resolution Post Processing Settings] value=");
 	run("ImageJSON", "file=["+jsonfile+"] command=objStart name=[Temporal Median Filtering] value=");
-	run("ImageJSON", "file=["+jsonfile+"] command=boolean name=[Applied] value="+Bool_ChromCorr);
+	run("ImageJSON", "file=["+jsonfile+"] command=boolean name=[Applied] value="+Bool_TempMed);
 	run("ImageJSON", "file=["+jsonfile+"] command=number name=[Window] value="+window);
 	run("ImageJSON", "file=["+jsonfile+"] command=number name=[Offset] value="+offset);
 	run("ImageJSON", "file=["+jsonfile+"] command=objEnd name= value=");
